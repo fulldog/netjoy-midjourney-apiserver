@@ -12,7 +12,7 @@ func Run(js []byte) error {
 	if err != nil {
 		return err
 	}
-	app := application.NewCfg(cfg)
+	app := application.NewCfg(&cfg)
 	if err := app.Run(); err != nil {
 		return err
 	}
