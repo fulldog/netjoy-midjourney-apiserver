@@ -52,6 +52,34 @@ func New() *Application {
 	return app
 }
 
+func NewCfg(cfg *config.Config) *Application {
+	dg, err := discordgo.New(cfg.Midjourney.UserToken)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cli := midjourney.NewClient(&midjourney.Config{
+		UserToken: cfg.Midjourney.UserToken,
+	})
+
+	stor := store.NewStore(&store.Config{
+		Redis: store.Redis{
+			Address:  cfg.Redis.Address,
+			Password: cfg.Redis.Password,
+		},
+	})
+
+	app := &Application{Base: &common.Base{Session: dg, Store: stor, MJClient: cli, Config: cfg}}
+
+	dg.AddHandler(app.messageCreate)
+	dg.AddHandler(app.messageUpdate)
+	dg.AddHandler(app.messageDelete)
+
+	dg.Identify.Intents = discordgo.IntentsAll
+
+	return app
+}
+
 func (app *Application) Run() error {
 	go func(app *Application) {
 		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", app.Config.ListenPort))
