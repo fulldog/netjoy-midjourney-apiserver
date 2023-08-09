@@ -2,8 +2,11 @@ package application
 
 import (
 	"fmt"
+	"github.com/gorilla/websocket"
 	"log"
 	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -61,7 +64,22 @@ func NewCfg(cfg *config.Config) *Application {
 	cli := midjourney.NewClient(&midjourney.Config{
 		UserToken: cfg.Midjourney.UserToken,
 	})
-
+	if cfg.HttpProxy != "" {
+		proxy, _ := url.Parse(cfg.HttpProxy)
+		dg.Client = &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyURL(proxy),
+			},
+		}
+		dg.Dialer = &websocket.Dialer{
+			Proxy: http.ProxyURL(proxy),
+		}
+		cli.Client = &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyURL(proxy),
+			},
+		}
+	}
 	stor := store.NewStore(&store.Config{
 		Redis: store.Redis{
 			Address:  cfg.Redis.Address,

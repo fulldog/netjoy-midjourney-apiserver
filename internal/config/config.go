@@ -11,6 +11,7 @@ type Config struct {
 	ListenPort int32      `yaml:"listen_port"`
 	Midjourney Midjourney `yaml:"midjourney"`
 	Redis      Redis      `yaml:"redis"`
+	HttpProxy  string     `yaml:"httpProxy"`
 }
 
 type Midjourney struct {
